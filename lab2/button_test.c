@@ -16,7 +16,7 @@ int main(int argc, char **argv)
 	char val;
 	
 	/* 1. 判断参数 */
-	if (argc != 2) 
+	if (argc != 2)
 	{
 		printf("Usage: %s <dev>\n", argv[0]);
 		return -1;

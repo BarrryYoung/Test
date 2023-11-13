@@ -3,6 +3,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <arpa/inet.h>
+#include "test.h"
 
 /*
 1.地址
@@ -23,8 +24,15 @@ int main(){
     int ret = connect(clientsocket,(struct sockaddr*)&serveraddr,sizeof(serveraddr));
     if(ret<0)printf("connetc error\n");
 
-    send(clientsocket,"holy shit",sizeof("holy shit"),0);
+    char data[200]={};
+    while(GetInfo(data)>0)
+    {
+        send(clientsocket,data,sizeof(data),0);
+        usleep(10000);
+    }
 
+    printf("\nsend complete\n");
     close(clientsocket);
 
+    return 0;
 }

@@ -90,12 +90,95 @@ void PrintInfo(struct GPSinfo* info){
 }
 
 
-void GetInfo(){
+void sPrintInfo(char* s, struct GPSinfo* info){
+    char s1[200]={};
+    char s2[100]={};
+    sprintf(s1,"时间：%d年%02d月%02d日，%02d时%02d分%02d秒\n",info->year+2000,info->month,info->day,info->hh,info->mm,info->ss);
+    
+
+    if (info->w_or_e=='W')sprintf(s2,"位置：西经");
+    else sprintf(s2,"位置：东经");
+    strcat(s1,s2);
+    sprintf(s2,"%d度%d分%d秒，",info->latitude,info->latitude_hh,info->latitude_ss/100);
+    strcat(s1,s2);
+
+    if (info->n_or_s=='N')sprintf(s2,"北纬");
+    else sprintf(s2,"南纬");
+    strcat(s1,s2);
+    sprintf(s2,"%d度%d分%d秒\n",info->longtitude,info->longtitude_hh,info->longtitude_ss/100);
+    strcat(s1,s2);
+
+
+    char direction_degree[5]={0};
+    char direction_minute[5]={0};
+    sscanf(info->direction,"%5[^.].%5[^.]",direction_degree,direction_minute);
+    sprintf(s2,"方向：北%s度%s分\n",direction_degree,direction_minute);
+    strcat(s1,s2);
+
+    sprintf(s2,"航速：%.1f公里/小时\n",float(*(info->speed))*1.852);
+    strcat(s1,s2);
+    sprintf(s2,"高度：%s米\n\n\n",info->altitude);
+    strcat(s1,s2);
+
+    strcpy(s,s1);
+
+    //  printf("%s",s1);
+    // return s1;
+}
+
+
+int GetInfo(char * data){
+    static FILE* file_ptr=fopen("data.txt","r");
+    if(file_ptr==NULL){
+      perror("error when opening:");
+    }
+
+    char LineBuffer[100];
+    char singleInfo[200];
+    struct GPSinfo info;
+    memset(&info,0,sizeof(info));
+
+
+
+   char GPGGA_Parser_Flag=0;
+   char GPRMC_Parser_Flag=0;
+    while (fgets(LineBuffer,sizeof(LineBuffer),file_ptr)!=NULL)
+    {
+      // printf("%s",LineBuffer);
+      if(strncmp(LineBuffer,"$GPGGA",6)==0){
+        if(Parser_GPGGA(LineBuffer,&info)!=-1){
+          GPGGA_Parser_Flag=1;
+        }
+      }
+      
+      if(strncmp(LineBuffer,"$GPRMC",6)==0){
+        if(Parser_GPRMC(LineBuffer,&info)!=-1){
+          GPRMC_Parser_Flag=1;          
+        }
+      }
+      
+      if(GPRMC_Parser_Flag==1&&GPGGA_Parser_Flag==1){
+        GPRMC_Parser_Flag=0;
+        GPGGA_Parser_Flag=0;
+
+        sPrintInfo(singleInfo,&info);
+        //printf("%s",singleInfo);
+        strcpy(data,singleInfo);
+        return strlen(singleInfo);
+      }
+    }
+    
+    return 0;
+
+}
+
+
+void PrintDatafile(){
     FILE* file_ptr;
     char LineBuffer[100];
     struct GPSinfo info;
     memset(&info,0,sizeof(info));
-
+    
 
     file_ptr=fopen("data.txt","r");
     if(file_ptr==NULL){
@@ -123,8 +206,9 @@ void GetInfo(){
       if(GPRMC_Parser_Flag==1&&GPGGA_Parser_Flag==1){
         GPRMC_Parser_Flag=0;
         GPGGA_Parser_Flag=0;
+        PrintInfo(&info);
       }
+
     }
-
-
+    
 }

@@ -18,7 +18,7 @@ int main(){
     memset(&serveraddr,0,sizeof(serveraddr));
     serveraddr.sin_family=AF_INET;
     serveraddr.sin_port=htons(8080);
-    serveraddr.sin_addr.s_addr=inet_addr("127.0.0.1");
+    serveraddr.sin_addr.s_addr=inet_addr("10.0.2.2");
 
 
     int ret = connect(clientsocket,(struct sockaddr*)&serveraddr,sizeof(serveraddr));

@@ -85,7 +85,7 @@ void PrintInfo(struct GPSinfo* info){
     sscanf(info->direction,"%5[^.].%5[^.]",direction_degree,direction_minute);
     printf("方向：北%s度%s分\n",direction_degree,direction_minute);
 
-    printf("航速：%.1f公里/小时\n",float(*(info->speed))*1.852);
+    printf("航速：%.1f公里/小时\n",(float)(*(info->speed))*1.852);
     printf("高度：%s米\n\n\n",info->altitude);
 }
 
@@ -115,7 +115,7 @@ void sPrintInfo(char* s, struct GPSinfo* info){
     sprintf(s2,"方向：北%s度%s分\n",direction_degree,direction_minute);
     strcat(s1,s2);
 
-    sprintf(s2,"航速：%.1f公里/小时\n",float(*(info->speed))*1.852);
+    sprintf(s2,"航速：%.1f公里/小时\n",(float)(*(info->speed))*1.852);
     strcat(s1,s2);
     sprintf(s2,"高度：%s米\n\n\n",info->altitude);
     strcat(s1,s2);
@@ -128,7 +128,7 @@ void sPrintInfo(char* s, struct GPSinfo* info){
 
 
 int GetInfo(char * data){
-    static FILE* file_ptr=fopen("data.txt","r");
+    static FILE* file_ptr=fopen("/dev/mydev","r");
     if(file_ptr==NULL){
       perror("error when opening:");
     }
@@ -180,7 +180,7 @@ void PrintDatafile(){
     memset(&info,0,sizeof(info));
     
 
-    file_ptr=fopen("data.txt","r");
+    file_ptr=fopen("/dev/mydev","r");
     if(file_ptr==NULL){
       perror("error when opening:");
     }

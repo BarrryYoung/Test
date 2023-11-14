@@ -1,0 +1,1 @@
+cmd_/home/book/debug/Test/lab5/simple-module.ko := arm-linux-gnueabihf-ld -EL -r  -T ./scripts/module-common.lds --build-id  -o /home/book/debug/Test/lab5/simple-module.ko /home/book/debug/Test/lab5/simple-module.o /home/book/debug/Test/lab5/simple-module.mod.o ;  true

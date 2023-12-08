@@ -115,7 +115,7 @@ int read_serial_frame(int serial_port,char* serial_frame){
                         printf("\n");
 
                         memcpy(serial_frame,frame_buf,frame_index);
-                        frame_index = 0; // 重置索引为下一个 SLIP 帧做准备
+                        // frame_index = 0; // 重置索引为下一个 SLIP 帧做准备
                         return frame_index;
                     } else {
                         // 发现帧开始

@@ -208,19 +208,14 @@ int main() {
     serial_frame_length=read_serial_frame(serial_port,serial_frame);
     // 读取数据
 
-    for(int i=0;i<serial_frame_length;i++){
-        printf(" %02x",serial_frame[i]);
-    }
     unsigned char tap_frame[1600]={0};
     memcpy(tap_frame,&serial_frame[5],serial_frame_length-8);
 
-    printf("tap frame:\n");
-    printf("0:%02x\n",tap_frame[0]);
-    printf("1:%02x\n",tap_frame[1]);
-    printf("2:%02x\n",tap_frame[2]);
+
     printf("serial_frame_length:%d\n",serial_frame_length-8);
+    printf("tap frame:\n");
     for(int i=0;i<serial_frame_length-8;i++){
-        printf(" %02x\n",tap_frame[i]);
+        printf(" %02x",tap_frame[i]);
     }
 
     write_tap_frame(tap_frame,serial_frame_length-8);    

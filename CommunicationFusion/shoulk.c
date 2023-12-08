@@ -89,7 +89,7 @@ int read_serial_frame(int serial_port,char* serial_frame){
     int receiving_frame = 0; // 是否正在接收帧的标志
 
     for(int a = 0; a < 100; a++) {
-        printf("read:");
+        printf("read:\n");
         num_bytes = read(serial_port, &read_buf, sizeof(read_buf));
 
         if (num_bytes < 0) {
@@ -212,6 +212,9 @@ int main() {
     memcpy(tap_frame,&serial_frame[5],serial_frame_length-8);
 
     printf("tap frame:\n");
+    printf("0:%02x\n",tap_frame[0]);
+    printf("1:%02x\n",tap_frame[1]);
+    printf("2:%02x\n",tap_frame[2]);
     for(int i=0;i<serial_frame_length-8;i++){
         printf(" %02x",tap_frame[i]);
     }

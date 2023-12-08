@@ -205,12 +205,15 @@ int main() {
 
     int serial_frame_length=0;
     unsigned char serial_frame[BUFFER_SIZE];
+
+    unsigned char tap_frame[1600]={0};
+
+
+    while(1){
     serial_frame_length=read_serial_frame(serial_port,serial_frame);
     // 读取数据
 
-    unsigned char tap_frame[1600]={0};
     memcpy(tap_frame,&serial_frame[5],serial_frame_length-8);
-
 
     printf("serial_frame_length:%d\n",serial_frame_length-8);
     printf("tap frame:\n");
@@ -218,7 +221,10 @@ int main() {
         printf(" %02x",tap_frame[i]);
     }
 
-    write_tap_frame(tap_frame,serial_frame_length-8);    
+    write_tap_frame(tap_frame,serial_frame_length-8);
+
+    }
+        
     return 0;
 //     memset(&read_buf, '\0', sizeof(read_buf));
 

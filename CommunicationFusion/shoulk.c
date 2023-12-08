@@ -213,7 +213,7 @@ int main() {
 
     printf("tap frame:\n");
     for(int i=0;i<serial_frame_length-8;i++){
-        printf("%02x ",tap_frame[i]);
+        printf(" %02x",tap_frame[i]);
     }
 
     write_tap_frame(tap_frame,serial_frame_length-8);    

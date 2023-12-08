@@ -218,7 +218,7 @@ int main() {
     printf("0:%02x\n",tap_frame[0]);
     printf("1:%02x\n",tap_frame[1]);
     printf("2:%02x\n",tap_frame[2]);
-    printf("%d",serial_frame_length-8);
+    printf("serial_frame_length:%d",serial_frame_length-8);
     for(int i=0;i<serial_frame_length-8;i++){
         printf(" %02x\n",tap_frame[i]);
     }

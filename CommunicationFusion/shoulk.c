@@ -9,6 +9,7 @@
 
 #define BUFFER_SIZE 1600
 #define END 0xc0
+#define DEBUG_FLAG 1
 
 
 int serial_port_init(){
@@ -80,7 +81,6 @@ int serial_port_init(){
 
 }
 
-
 int read_serial_frame(int serial_port,char* serial_frame){
     unsigned char read_buf[BUFFER_SIZE];
     unsigned char frame_buf[BUFFER_SIZE];
@@ -89,14 +89,26 @@ int read_serial_frame(int serial_port,char* serial_frame){
     int receiving_frame = 0; // 是否正在接收帧的标志
 
     for(int a = 0; a < 100; a++) {
-        printf("read:\n");
         num_bytes = read(serial_port, &read_buf, sizeof(read_buf));
 
         if (num_bytes < 0) {
             printf("Error reading: %s\n", strerror(errno));
         } else if (num_bytes == 0) {
+            if(DEBUG_FLAG)printf("got no data from serial port.\n");
             continue;
         } else {
+
+
+            if(DEBUG_FLAG){
+                printf("got data when reading serial port:");
+                for(int temp=0; temp<num_bytes; temp++){
+                    printf(" %02x",read_buf[temp]);
+                }
+                printf("\n");
+
+            }
+            
+
             for(i = 0; i < num_bytes; i++) {
                 unsigned char byte = read_buf[i];
 
@@ -107,12 +119,16 @@ int read_serial_frame(int serial_port,char* serial_frame){
                         frame_buf[frame_index] = END; // 添加帧结尾
                         frame_index++; // 增加索引以准备下次接收
 
-                        // 处理 SLIP 帧 - 这里你可以将 frame_buf 传递给其他函数进行处理
-                        printf("SLIP frame received: ");
-                        for (int j = 0; j < frame_index; j++) {
-                            printf("%02x ", frame_buf[j]);
+                        
+                        if(DEBUG_FLAG){
+                            // 处理 SLIP 帧 - 这里你可以将 frame_buf 传递给其他函数进行处理
+                            printf("SLIP frame received: ");
+                            for (int j = 0; j < frame_index; j++) {
+                                printf("%02x ", frame_buf[j]);
+                            }
+                            printf("\n");
                         }
-                        printf("\n");
+                        
 
                         memcpy(serial_frame,frame_buf,frame_index);
                         // frame_index = 0; // 重置索引为下一个 SLIP 帧做准备
@@ -144,49 +160,6 @@ int read_serial_frame(int serial_port,char* serial_frame){
     return 0;
 }
 
-
-
-
-
-
-// int tap_init(){
-//     char dev_name[IFNAMSIZ]="tap0";
-//     int tap_fd=0;
-
-//     tap_fd=tun_alloc(dev_name,IFF_TAP);
-//     if(tap_fd < 0){
-//       perror("Allocating error");
-//       exit(1);
-//     }
-  
-//     return tap_fd;
-// }
-
-
-// int get_tap_frame(int tap_fd,char* tap_frame){
-//     static unsigned char buffer[2000];
-//     memset(buffer,0,sizeof(buffer));
-//     int nread=0;
-
-//     nread=read(tap_fd,buffer,sizeof(buffer));
-//     if(nread < 0){
-//       perror("reading from interface");
-//       close(tap_fd);
-//       exit(1);
-//     }
-
-//     printf("read %d bytes data:\n",nread);
-//     // printf("%0*x\n",nread,buffer);
-//     for (int i = 0; i < nread; i++) {
-//       printf("%02x ", buffer[i]);
-//     }
-//     printf("\n");
-
-//     memcpy(tap_frame,buffer,nread);
-//     return nread;
-
-// }
-
 void write_tap_frame(int tap_fd, char* tap_frame,int tap_frame_length){
     int nwrite=write(tap_fd,tap_frame,tap_frame_length);
     if(nwrite < 0){
@@ -199,55 +172,46 @@ void write_tap_frame(int tap_fd, char* tap_frame,int tap_frame_length){
 }
 
 int main() {
-    // 打开串口
-    int serial_port=serial_port_init();
 
+    /*
+    做一堆初始化，包括：
+    1.串口
+    2.tap网卡
+    */
+
+    // 打开串口，拿到串口的fd
+    int serial_port=serial_port_init();
     int serial_frame_length=0;
     unsigned char serial_frame[BUFFER_SIZE];
 
-    unsigned char tap_frame[1600]={0};
+    //打开tap，拿到tap的fd
     int tap_fd=tap_init();
+    unsigned char tap_frame[1600]={0};
 
 
+    /*
+    进入死循环，包括：
+    1.从串口读数据
+    2.解包数据
+    3.写到网卡中
+    */
     while(1){
     serial_frame_length=read_serial_frame(serial_port,serial_frame);
-    // 读取数据
-
     memcpy(tap_frame,&serial_frame[5],serial_frame_length-8);
-
-    printf("serial_frame_length:%d\n",serial_frame_length-8);
-    printf("tap frame:\n");
-    for(int i=0;i<serial_frame_length-8;i++){
-        printf(" %02x",tap_frame[i]);
+    
+    
+    if(DEBUG_FLAG){
+        printf("\n\ntap_frame_length:%d\n",serial_frame_length-8);
+        printf("tap frame:\n");
+        for(int i=0;i<serial_frame_length-8;i++){
+            printf(" %02x",tap_frame[i]);
+        }
     }
+    
 
     write_tap_frame(tap_fd, tap_frame,serial_frame_length-8);
 
     }
         
     return 0;
-//     memset(&read_buf, '\0', sizeof(read_buf));
-
-    
-//     for(int a=0; a<100; a++){
-// 	printf("\nread:");
-//     int num_bytes = read(serial_port, &read_buf, sizeof(read_buf));
-
-//     // 检查读取的字节数
-//     if (num_bytes < 0) {
-//         printf("Error reading: %s\n", strerror(errno));
-//     } 
-//     else if(num_bytes==0)continue;
-//     else
-//     {
-//         //printf("Read %i bytes. Received message: ", num_bytes);
-//         for(int i = 0; i < num_bytes; i++)
-//             printf("%02x ", read_buf[i]);
-//         printf("\n");
-//     }
-// }
-//     // 关闭串口
-//     close(serial_port);
-
-//     return 0;
 }

@@ -1,15 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <fcntl.h>
-#include <string.h>
-#include <errno.h>
 #include <termios.h>
-#include "tunclient.h"
+#include <termios.h>
 
-#define BUFFER_SIZE 1600
-#define END 0xc0
+
 #define DEBUG_FLAG 1
+#define END 0xc0
+#define BUFFER_SIZE 1600
+
 
 
 int serial_port_init(){
@@ -80,6 +79,10 @@ int serial_port_init(){
     return serial_port;
 
 }
+
+
+
+
 
 int read_serial_frame(int serial_port,char* serial_frame){
     unsigned char read_buf[BUFFER_SIZE];
@@ -157,61 +160,5 @@ int read_serial_frame(int serial_port,char* serial_frame){
 
     close(serial_port); // 关闭串口
 
-    return 0;
-}
-
-void write_tap_frame(int tap_fd, char* tap_frame,int tap_frame_length){
-    int nwrite=write(tap_fd,tap_frame,tap_frame_length);
-    if(nwrite < 0){
-      perror("writing from interface");
-      close(tap_fd);
-      exit(1);    
-    }
-    printf("read %d bytes to tap", nwrite);
-
-}
-
-int main() {
-
-    /*
-    做一堆初始化，包括：
-    1.串口
-    2.tap网卡
-    */
-
-    // 打开串口，拿到串口的fd
-    int serial_port=serial_port_init();
-    int serial_frame_length=0;
-    unsigned char serial_frame[BUFFER_SIZE];
-
-    //打开tap，拿到tap的fd
-    int tap_fd=tap_init();
-    unsigned char tap_frame[1600]={0};
-
-
-    /*
-    进入死循环，包括：
-    1.从串口读数据
-    2.解包数据
-    3.写到网卡中
-    */
-    while(1){
-    serial_frame_length=read_serial_frame(serial_port,serial_frame);
-    memcpy(tap_frame,&serial_frame[5],serial_frame_length-8);
-    
-    
-    if(DEBUG_FLAG){
-        printf("\n\ntap_frame_length:%d\n",serial_frame_length-8);
-        printf("tap frame:\n");
-        for(int i=0;i<serial_frame_length-8;i++){
-            printf(" %02x",tap_frame[i]);
-        }
-    }
-    
-
-    write_tap_frame(tap_fd, tap_frame,serial_frame_length-8);
-
-    }
-        
     return 0;
 }

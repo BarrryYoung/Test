@@ -2,10 +2,19 @@
 #include <string.h>
 #include <stdlib.h>
 
+#include <linux/if.h>
+#include <linux/if_tun.h>
+#include <fcntl.h>
+#include <string.h>
+#include <sys/ioctl.h>
+#include <stdio.h>
+
+#include "tunclient.h"
+#include <unistd.h>
+#include <stdlib.h>
+// #include <net/if.h>
 
 
-
-//发送程序
 
 unsigned short getCRC(unsigned char* buf, unsigned int len){
 
@@ -54,24 +63,26 @@ char* modifyArray(unsigned char *buffer, size_t length) {
     return newBuffer;
 }
 
-void getdata(char* tapframe, unsigned int* tapdata_length){
-    //get data and len from tap:
-    // get_data_and_len()
-    static unsigned char inputStr[1600];
-    memset(inputStr,0,sizeof(inputStr));
-    printf("请输入一串字符串：");
-    fgets(inputStr, sizeof(inputStr), stdin); // 使用fgets读取包括空格的字符串
-    unsigned char* frame;
-    frame=inputStr;
-    // unsigned char buffer[] = {0x01, 0x02, 0x33};
-    // size_t length = sizeof(buffer) / sizeof(buffer[0]);
-    size_t length=strlen(frame)-1;
+// void get_tap_frame(char* tapframe, unsigned int* tapdata_length){
+//     //get data and len from tap:
+//     // get_data_and_len()
+//     static unsigned char inputStr[1600];
+//     memset(inputStr,0,sizeof(inputStr));
+//     printf("请输入一串字符串：");
+//     fgets(inputStr, sizeof(inputStr), stdin); // 使用fgets读取包括空格的字符串
+//     unsigned char* frame;
+//     frame=inputStr;
+//     // unsigned char buffer[] = {0x01, 0x02, 0x33};
+//     // size_t length = sizeof(buffer) / sizeof(buffer[0]);
+//     size_t length=strlen(frame)-1;
 
 
-    memcpy(tapframe,frame,length);
-    *tapdata_length=length;
-    printf("got date from tap:datalength:%d",length);
-}
+//     memcpy(tapframe,frame,length);
+//     *tapdata_length=length;
+//     printf("got date from tap:datalength:%d",length);
+// }
+
+
 
 
 void generateframe(char* serialframe,char* tapframe,unsigned int tapdata_length){
@@ -94,27 +105,72 @@ void generateframe(char* serialframe,char* tapframe,unsigned int tapdata_length)
 
 
 
+int tap_init(){
+    char dev_name[IFNAMSIZ]="tap0";
+    int tap_fd=0;
+
+    tap_fd=tun_alloc(dev_name,IFF_TAP);
+    if(tap_fd < 0){
+      perror("Allocating error");
+      exit(1);
+    }
+  
+    return tap_fd;
+}
 
 
+int get_tap_frame(int tap_fd,char* tap_frame){
+    static buffer[2000];
+    memset(buffer,0,sizeof(buffer));
+    int nread=0;
+
+    nread=read(tap_fd,buffer,sizeof(buffer));
+    if(nread < 0){
+      perror("reading from interface");
+      close(tap_fd);
+      exit(1);
+    }
+
+    printf("read %d bytes data:\n",nread);
+    // printf("%0*x\n",nread,buffer);
+    for (int i = 0; i < nread; i++) {
+      printf("%02x ", buffer[i]);
+    }
+    printf("\n");
+
+    memcpy(tap_frame,buffer,nread);
+    return nread;
+
+}
+
+
+
+void wirte_tap_frame(char* tapframe,int tapframe_length){
+    
+}
 int main() {
     
     //读网卡，返回数据和数据长度
     unsigned char tapframe[1600]={0};
-    unsigned int tapdata_length=0;
+    unsigned int tapframe_length=0;
     
-    //获取数据和长度.这里我用了自己输入的，你改成从网卡获取的。别把函数删了，注释了再用tunclient.c里函数封装下写个新的
-    getdata(tapframe,&tapdata_length);
+
+    int tap_fd=tap_init();//初始化
+    
+    tapframe_length=get_tap_frame(tap_fd,tapframe);
 
     //组装串口帧，也就是加头加尾
     //serialframe就是最终获得的帧，长度就是tapdata_length+1+2+2+2+1=tapdata_length+8
     unsigned char serialframe[1600]={0};
-    generateframe(serialframe,tapframe,tapdata_length);
+    generateframe(serialframe,tapframe,tapframe_length);
 
-
-
-    for(int i=0;i<tapdata_length+8;i++){
+    printf("frame generated:\n");
+    for(int i=0;i<tapframe_length+8;i++){
         printf("%02x ",serialframe[i]);
     }
+
+
+    wirte_tap_frame(tapframe,tapframe_length);
 
     return 0;
 

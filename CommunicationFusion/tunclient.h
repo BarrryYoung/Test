@@ -10,7 +10,6 @@
 // #include <net/if.h>
 
 
-
 int tun_alloc(char *dev, int flags) {
 
   struct ifreq ifr;
@@ -61,3 +60,45 @@ int tun_alloc(char *dev, int flags) {
    * with the virtual interface */
   return fd;
 }
+
+
+
+
+int tap_init(){
+    char dev_name[IFNAMSIZ]="tap0";
+    int tap_fd=0;
+
+    tap_fd=tun_alloc(dev_name,IFF_TAP);
+    if(tap_fd < 0){
+      perror("Allocating error");
+      exit(1);
+    }
+  
+    return tap_fd;
+}
+
+
+int get_tap_frame(int tap_fd,char* tap_frame){
+    static unsigned char buffer[2000];
+    memset(buffer,0,sizeof(buffer));
+    int nread=0;
+
+    nread=read(tap_fd,buffer,sizeof(buffer));
+    if(nread < 0){
+      perror("reading from interface");
+      close(tap_fd);
+      exit(1);
+    }
+
+    printf("read %d bytes data:\n",nread);
+    // printf("%0*x\n",nread,buffer);
+    for (int i = 0; i < nread; i++) {
+      printf("%02x ", buffer[i]);
+    }
+    printf("\n");
+
+    memcpy(tap_frame,buffer,nread);
+    return nread;
+
+}
+

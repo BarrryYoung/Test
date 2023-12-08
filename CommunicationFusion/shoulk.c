@@ -187,8 +187,7 @@ int read_serial_frame(int serial_port,char* serial_frame){
 
 // }
 
-void write_tap_frame(char* tap_frame,int tap_frame_length){
-    int tap_fd=tap_init();
+void write_tap_frame(int tap_fd, char* tap_frame,int tap_frame_length){
     int nwrite=write(tap_fd,tap_frame,tap_frame_length);
     if(nwrite < 0){
       perror("writing from interface");
@@ -207,6 +206,7 @@ int main() {
     unsigned char serial_frame[BUFFER_SIZE];
 
     unsigned char tap_frame[1600]={0};
+    int tap_fd=tap_init();
 
 
     while(1){
@@ -221,7 +221,7 @@ int main() {
         printf(" %02x",tap_frame[i]);
     }
 
-    write_tap_frame(tap_frame,serial_frame_length-8);
+    write_tap_frame(tap_fd, tap_frame,serial_frame_length-8);
 
     }
         

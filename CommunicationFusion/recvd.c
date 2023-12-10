@@ -31,16 +31,16 @@ int main() {
     
     
     if(DEBUG_FLAG){
-        printf("\ntap_frame_length:%d\n",serial_frame_length-8);
+        printf("\ntap_frame_length:%d\n",decoded_data_length-6);
         printf("tap frame:\n");
-        for(int i=0;i<serial_frame_length-8;i++){
-            printf(" %02x",tap_frame[i]);
+        for(int i=0;i<decoded_data_length-6;i++){
+            printf("%02x ",tap_frame[i]);
         }
         printf("\n");
     }
 
 
-    write_tap_frame(tap_fd, tap_frame,serial_frame_length-8);
+    write_tap_frame(tap_fd, tap_frame,decoded_data_length-6);
     printf("\n\n\n\n\n");
 
     }

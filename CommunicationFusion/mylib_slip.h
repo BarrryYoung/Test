@@ -4,7 +4,7 @@
 
 
 // 编码函数，实现 SLIP 编码逻辑
-int slip_encode(char* serial_frame, int length) {
+int slip_encode(unsigned char* serial_frame, int length) {
     // 估算转义后的长度可能会增加，最坏情况下每个字符都需要转义
     int max_encoded_length = length * 2;
     char* buffer = (char*)malloc(max_encoded_length);
@@ -37,7 +37,7 @@ int slip_encode(char* serial_frame, int length) {
 }
 
 // 解码函数，实现 SLIP 解码逻辑
-int slip_decode(char* tap_frame, int length) {
+int slip_decode(unsigned char* tap_frame, int length) {
     int j = 0;
     for (int i = 0; i < length; ++i) {
         if (tap_frame[i] == 0xDB && i + 1 < length) {
@@ -106,7 +106,7 @@ int generateframe(char* serialframe,char* tapframe,unsigned int tapdata_length){
     serialframe[tapdata_length+1+4+1]=(unsigned char)crc;
 
     int encoded_data_length=0;
-    encoded_data_length=slip_encode(&serialframe[1],tapdata_length+6)
+    encoded_data_length=slip_encode(&serialframe[1],tapdata_length+6);
 
 
     serialframe[encoded_data_length+1]=0xc0;

@@ -32,12 +32,12 @@ while(1){
     encoded_data_length=generateframe(serialframe,tapframe,tapframe_length);
 
     printf("frame generated:\n");
-    for(int i=0;i<tapframe_length+8;i++){
+    for(int i=0;i<encoded_data_length;i++){
         printf("%02x ",serialframe[i]);
     }
     printf("\n");
 
-    write(serial_port, serialframe, tapframe_length+8);
+    write(serial_port, serialframe, encoded_data_length);
     printf("\n\n\n\n");
 }
 

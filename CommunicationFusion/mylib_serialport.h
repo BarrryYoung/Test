@@ -13,8 +13,8 @@
 
 
 
-int serial_port_init(){
-    int serial_port = open("/dev/ttyS5", O_RDWR);
+int serial_port_init(char * serial_path){
+    int serial_port = open(serial_path, O_RDWR);
 
     // 检查串口是否打开成功
     if (serial_port < 0) {
@@ -120,7 +120,7 @@ int read_serial_frame(int serial_port,char* serial_frame){
 
 
             if(DEBUG_FLAG){
-                printf("got data when reading serial port:");
+                printf("got data when reading serial port:\n");
                 for(int temp=0; temp<num_bytes; temp++){
                     printf(" %02x",read_buf[temp]);
                 }
@@ -142,7 +142,7 @@ int read_serial_frame(int serial_port,char* serial_frame){
                         
                         if(DEBUG_FLAG){
                             // 处理 SLIP 帧 - 这里你可以将 frame_buf 传递给其他函数进行处理
-                            printf("SLIP frame received: ");
+                            printf("\nSLIP frame received:\n");
                             for (int j = 0; j < frame_index; j++) {
                                 printf("%02x ", frame_buf[j]);
                             }

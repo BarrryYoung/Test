@@ -13,12 +13,12 @@ int main() {
     //做一堆初始化，包括：1.串口2.tap网卡
 
     // 打开串口，拿到串口的fd
-    int serial_port=serial_port_init();
+    int serial_port=serial_port_init("/dev/pts/2");
     int serial_frame_length=0;
     unsigned char serial_frame[BUFFER_SIZE];
 
     //打开tap，拿到tap的fd
-    int tap_fd=tap_init();
+    int tap_fd=tap_init("tap1");
     unsigned char tap_frame[1600]={0};
 
 
@@ -29,15 +29,17 @@ int main() {
     
     
     if(DEBUG_FLAG){
-        printf("\n\ntap_frame_length:%d\n",serial_frame_length-8);
+        printf("\ntap_frame_length:%d\n",serial_frame_length-8);
         printf("tap frame:\n");
         for(int i=0;i<serial_frame_length-8;i++){
             printf(" %02x",tap_frame[i]);
         }
+        printf("\n");
     }
 
 
     write_tap_frame(tap_fd, tap_frame,serial_frame_length-8);
+    printf("\n\n\n\n\n");
 
     }
         

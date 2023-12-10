@@ -20,7 +20,7 @@ char* modifyArray(unsigned char *buffer, size_t length) {
     memcpy(newBuffer + 4, buffer, length);
 
     // 打印结果，这里可以根据需要进行其他操作
-    printf("Modified Array: { ");
+    printf("Modified Array:\n { ");
     for (size_t i = 0; i < newLength; ++i) {
         printf("0x%02X ", newBuffer[i]);
     }

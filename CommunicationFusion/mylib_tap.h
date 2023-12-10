@@ -64,8 +64,9 @@ int tun_alloc(char *dev, int flags) {
 
 
 
-int tap_init(){
-    char dev_name[IFNAMSIZ]="tap0";
+int tap_init(char* interface_name){
+    char dev_name[IFNAMSIZ]={0};
+    memcpy(dev_name,interface_name,sizeof(interface_name));
     int tap_fd=0;
 
     tap_fd=tun_alloc(dev_name,IFF_TAP);
@@ -130,6 +131,6 @@ void write_tap_frame(int tap_fd, char* tap_frame,int tap_frame_length){
       close(tap_fd);
       exit(1);    
     }
-    printf("read %d bytes to tap", nwrite);
+    printf("write %d bytes to tap\n", nwrite);
 
 }

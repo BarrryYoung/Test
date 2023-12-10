@@ -8,7 +8,7 @@
 
 int main() {
 
-    int serial_port=serial_port_init();
+    int serial_port=serial_port_init("/dev/pts/1");
 
 
     unsigned char tapframe[1600]={0};
@@ -16,7 +16,7 @@ int main() {
     
 
     //tap初始化,返回file descriptor
-    int tap_fd=tap_init();
+    int tap_fd=tap_init("tap0");
     unsigned char serialframe[1600]={0};
 
 while(1){
@@ -34,8 +34,10 @@ while(1){
     for(int i=0;i<tapframe_length+8;i++){
         printf("%02x ",serialframe[i]);
     }
+    printf("\n");
 
     write(serial_port, serialframe, tapframe_length+8);
+    printf("\n\n\n\n");
 }
 
     close(serial_port);

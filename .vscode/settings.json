@@ -2,6 +2,7 @@
     "files.associations": {
         "test.h": "c",
         "stdio.h": "c",
-        "errno.h": "c"
+        "errno.h": "c",
+        "mylib_serialport.h": "c"
     }
 }

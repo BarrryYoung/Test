@@ -27,8 +27,9 @@ while(1){
 
     //组装串口帧，也就是加头加尾
     //serialframe就是最终获得的帧，长度就是tapframe_length+1+2+2+2+1=tapframe_length+8
-    
-    generateframe(serialframe,tapframe,tapframe_length);
+
+    int encoded_data_length=0;
+    encoded_data_length=generateframe(serialframe,tapframe,tapframe_length);
 
     printf("frame generated:\n");
     for(int i=0;i<tapframe_length+8;i++){

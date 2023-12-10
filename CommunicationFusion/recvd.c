@@ -4,6 +4,7 @@
 #include <errno.h>
 #include "mylib_tap.h"
 #include "mylib_serialport.h"
+#include "mylib_slip.h"
 
 
 
@@ -25,7 +26,8 @@ int main() {
     //进入死循环，包括：1.从串口读数据 2.解包数据 3.写到网卡中
     while(1){
     serial_frame_length=read_serial_frame(serial_port,serial_frame);
-    memcpy(tap_frame,&serial_frame[5],serial_frame_length-8);
+    int decoded_data_length=slip_decode(&serial_frame[1],serial_frame_length-2);
+    memcpy(tap_frame,&serial_frame[5],decoded_data_length-6);
     
     
     if(DEBUG_FLAG){

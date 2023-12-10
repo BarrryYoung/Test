@@ -91,9 +91,11 @@ void* recvd(void* args){
 
 int main() {
     //初始化
-    int serial_port=serial_port_init("/dev/pts/2");//serial_port初始化，返回fd
-    int tap_fd=tap_init("tap1");//tap初始化,返回file descriptor
-
+    char serialport[]="/dev/ttyS11";
+    char tap[]="tap0";
+    int serial_port=serial_port_init(serialport);//serial_port初始化，返回fd
+    int tap_fd=tap_init(tap);//tap初始化,返回file descriptor
+    printf("he\n");
 
     //多线程
     pthread_t thread_recv, thread_send;

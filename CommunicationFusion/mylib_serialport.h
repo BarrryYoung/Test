@@ -51,7 +51,7 @@ int serial_port_init(char * serial_path){
         tty.c_cflag &= ~CSTOPB; // Clear stop field, only one stop bit used in communication (most common)
         tty.c_cflag &= ~CSIZE; // Clear all bits that set the data size 
         tty.c_cflag |= CS8; // 8 bits per byte (most common)
-        tty.c_cflag &= ~CRTSCTS; // Disable RTS/CTS hardware flow control (most common)
+        //tty.c_cflag &= ~CRTSCTS; // Disable RTS/CTS hardware flow control (most common)
         tty.c_cflag |= CREAD | CLOCAL; // Turn on READ & ignore ctrl lines (CLOCAL = 1)
 
         tty.c_lflag &= ~ICANON;
@@ -101,79 +101,90 @@ unsigned short getCRC(unsigned char* buf, unsigned int len){
     return crc;
 }
 
-int read_serial_frame(int serial_port,char* serial_frame){
-    unsigned char read_buf[BUFFER_SIZE];
+int read_serial_frame(int serial_port,unsigned char* serial_frame){
+    static unsigned char read_buf[BUFFER_SIZE];
     unsigned char frame_buf[BUFFER_SIZE];
-    int frame_index = 0; // SLIP帧缓冲区中的索引
-    int num_bytes, i;
-    int receiving_frame = 0; // 是否正在接收帧的标志
+    static int frame_index = 0; // SLIP帧缓冲区中的索引
+    static int i=0,num_bytes=0;
+    static char finished=1;
+    static int receiving_frame = 0; // 是否正在接收帧的标志
 
     for(int a = 0; a < 100; a++) {
-        num_bytes = read(serial_port, &read_buf, sizeof(read_buf));
-
-        if (num_bytes < 0) {
-            printf("Error reading: %s\n", strerror(errno));
-        } else if (num_bytes == 0) {
-            if(DEBUG_FLAG)printf("got no data from serial port.\n");
-            continue;
-        } else {
-
-
-            if(DEBUG_FLAG){
-                printf("got data when reading serial port:\n");
-                for(int temp=0; temp<num_bytes; temp++){
-                    printf(" %02x",read_buf[temp]);
-                }
-                printf("\n");
-
-            }
-            
-
-            for(i = 0; i < num_bytes; i++) {
-                unsigned char byte = read_buf[i];
-
-                if (byte == END) {
-                    if (receiving_frame) {
-                        // 发现帧结尾，处理已经接收的完整帧
-                        receiving_frame = 0;
-                        frame_buf[frame_index] = END; // 添加帧结尾
-                        frame_index++; // 增加索引以准备下次接收
-
-                        
-                        if(DEBUG_FLAG){
-                            // 处理 SLIP 帧 - 这里你可以将 frame_buf 传递给其他函数进行处理
-                            printf("\nSLIP frame received:\n");
-                            for (int j = 0; j < frame_index; j++) {
-                                printf("%02x ", frame_buf[j]);
-                            }
-                            printf("\n");
-                        }
-                        
-
-                        memcpy(serial_frame,frame_buf,frame_index);
-                        // frame_index = 0; // 重置索引为下一个 SLIP 帧做准备
-                        return frame_index;
-                    } else {
-                        // 发现帧开始
-                        receiving_frame = 1;
-                        frame_buf[frame_index] = END; // 添加帧开始
-                        frame_index = 1; // 设置索引到帧缓冲区的下一个位置
+        if(finished){//上次串口数据以c0结尾，处理完了所有串口读到的数据，没有剩余
+            num_bytes = read(serial_port, &read_buf, sizeof(read_buf));
+                if (num_bytes < 0) {
+                printf("Error reading: %s\n", strerror(errno));
+            } else if (num_bytes == 0) {
+                if(DEBUG_FLAG)printf("got no data from serial port.\n");
+                continue;
+            }else {
+                if(DEBUG_FLAG){
+                    printf("got data when reading serial port:\n");
+                    for(int temp=0; temp<num_bytes; temp++){
+                        printf(" %02x",read_buf[temp]);
                     }
-                } else if (receiving_frame) {
-                    // 如果我们处于接收帧的状态，将数据添加到 frame_buf
-                    frame_buf[frame_index] = byte;
-                    frame_index++;
-                    if (frame_index >= BUFFER_SIZE) {
-                        // 缓冲区溢出，这通常表明出错，重置状态等待下一个帧开始
-                        receiving_frame = 0;
-                        frame_index = 0;
-                        printf("Error: Frame buffer overflow\n");
+                    printf("\n");
                     }
-                }
-                // 如果不是在接收帧，忽略所有非 END 字节
             }
         }
+
+         
+            
+        if(finished)i=0;
+        for(; i < num_bytes; i++) {
+            unsigned char byte = read_buf[i];
+
+            if (byte == END) {
+                if (receiving_frame) {
+                    // 发现帧结尾，处理已经接收的完整帧
+                    receiving_frame = 0;
+                    frame_buf[frame_index] = END; // 添加帧结尾
+                    frame_index++; // 增加索引以准备下次接收
+
+                    
+                    if(DEBUG_FLAG){
+                        // 处理 SLIP 帧 - 这里你可以将 frame_buf 传递给其他函数进行处理
+                        printf("\nSLIP frame received:\n");
+                        for (int j = 0; j < frame_index; j++) {
+                            printf("%02x ", frame_buf[j]);
+                        }
+                        printf("\n");
+                    }
+                    
+
+                    memcpy(serial_frame,frame_buf,frame_index);
+                    // frame_index = 0; // 重置索引为下一个 SLIP 帧做准备
+                    if(i==num_bytes-1)finished=1; 
+                    int frame_length=frame_index;
+                    frame_index=0;  
+                    return frame_length;
+                } else {
+                    // 发现帧开始
+                    if(read_buf[i+1]==END)continue;
+                    receiving_frame = 1;
+                    frame_buf[frame_index] = END; // 添加帧开始
+                    frame_index = 1; // 设置索引到帧缓冲区的下一个位置
+                }
+            } else if (receiving_frame) {
+                // 如果我们处于接收帧的状态，将数据添加到 frame_buf
+                frame_buf[frame_index] = byte;
+                frame_index++;
+                
+                if (frame_index >= BUFFER_SIZE) {
+                    // 缓冲区溢出，这通常表明出错，重置状态等待下一个帧开始
+                    receiving_frame = 0;
+                    frame_index = 0;
+                    printf("Error: Frame buffer overflow\n");
+                }
+            }
+            // 如果不是在接收帧，忽略所有非 END 字节
+
+            finished=1;
+        }
+        
     }
+
+
 
     close(serial_port); // 关闭串口
 

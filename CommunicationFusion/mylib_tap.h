@@ -14,7 +14,7 @@ int tun_alloc(char *dev, int flags) {
 
   struct ifreq ifr;
   int fd, err;
-  char *clonedev = "/dev/net/tun";
+  char clonedev[] = "/dev/net/tun";
 
   /* Arguments taken by the function:
    *
@@ -80,7 +80,7 @@ int tap_init(char* interface_name){
 
 
 
-int get_tap_frame(int tap_fd,char* tap_frame){
+int get_tap_frame(int tap_fd,unsigned char* tap_frame){
     static unsigned char buffer[2000];
     memset(buffer,0,sizeof(buffer));
     int nread=0;
@@ -124,7 +124,7 @@ int get_tap_frame(int tap_fd,char* tap_frame){
 //     printf("got date from tap:datalength:%d",length);
 // }
 
-void write_tap_frame(int tap_fd, char* tap_frame,int tap_frame_length){
+void write_tap_frame(int tap_fd,unsigned char* tap_frame,int tap_frame_length){
     int nwrite=write(tap_fd,tap_frame,tap_frame_length);
     if(nwrite < 0){
       perror("writing from interface");

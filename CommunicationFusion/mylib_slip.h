@@ -61,7 +61,7 @@ int slip_decode(unsigned char* tap_frame, int length) {
 }
 
 
-char* modifyArray(unsigned char *buffer, size_t length) {
+unsigned char* modifyArray(unsigned char *buffer, size_t length) {
     // 创建新数组，长度为原数组长度加上固定头部和长度信息的长度
     size_t newLength = length + 4; // 2 bytes for fixed header + 2 bytes for length
     unsigned char *newBuffer = (unsigned char *)malloc(newLength);
@@ -90,11 +90,11 @@ char* modifyArray(unsigned char *buffer, size_t length) {
 }
 
 
-int generateframe(char* serialframe,char* tapframe,unsigned int tapdata_length){
+int generateframe(unsigned char* serialframe,unsigned char* tapframe,size_t tapdata_length){
     serialframe[0]=0xc0;
     // serialframe[tapdata_length+1+4+2]=0xc0;
 
-    char *newframe=0;
+    unsigned char *newframe=0;
     newframe=modifyArray(tapframe,tapdata_length);//获得加上头部的帧
 
     memcpy(&serialframe[1],newframe,tapdata_length+6);

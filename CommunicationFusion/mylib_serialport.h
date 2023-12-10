@@ -3,6 +3,8 @@
 #include <unistd.h>
 #include <termios.h>
 #include <termios.h>
+#include <errno.h>
+#include <fcntl.h>
 
 
 #define DEBUG_FLAG 1
@@ -80,9 +82,24 @@ int serial_port_init(){
 
 }
 
+unsigned short getCRC(unsigned char* buf, unsigned int len){
 
-
-
+    unsigned int i,j;
+    unsigned short crc,flag;
+    crc=0x0000;
+    for(i=0;i<len;i++){
+        crc^=(((unsigned short)buf[i])<<8);
+        for (j=0;j<8;j++){
+            flag=crc&0x8000;
+            crc<<=1;
+            if(flag){
+                crc&=0xfffe;
+                crc^=0x8005;
+            }
+        }
+    }
+    return crc;
+}
 
 int read_serial_frame(int serial_port,char* serial_frame){
     unsigned char read_buf[BUFFER_SIZE];

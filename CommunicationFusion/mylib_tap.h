@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <errno.h>
 // #include <net/if.h>
 
 
@@ -103,6 +104,24 @@ int get_tap_frame(int tap_fd,char* tap_frame){
 }
 
 
+// void get_tap_frame(char* tapframe, unsigned int* tapdata_length){
+//     //get data and len from tap:
+//     // get_data_and_len()
+//     static unsigned char inputStr[1600];
+//     memset(inputStr,0,sizeof(inputStr));
+//     printf("请输入一串字符串：");
+//     fgets(inputStr, sizeof(inputStr), stdin); // 使用fgets读取包括空格的字符串
+//     unsigned char* frame;
+//     frame=inputStr;
+//     // unsigned char buffer[] = {0x01, 0x02, 0x33};
+//     // size_t length = sizeof(buffer) / sizeof(buffer[0]);
+//     size_t length=strlen(frame)-1;
+
+
+//     memcpy(tapframe,frame,length);
+//     *tapdata_length=length;
+//     printf("got date from tap:datalength:%d",length);
+// }
 
 void write_tap_frame(int tap_fd, char* tap_frame,int tap_frame_length){
     int nwrite=write(tap_fd,tap_frame,tap_frame_length);

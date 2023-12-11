@@ -1,1 +1,1 @@
-gcc -o recvd recvd.c -l pthread
+gcc -o sendd sendd.c -l pthread

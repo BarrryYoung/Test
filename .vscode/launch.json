@@ -4,14 +4,16 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
-        {
-            "name": "(gdb) Launch",
+        {   
+            "miDebuggerArgs": "-q -ex quit; wait() { fg >/dev/null; }; /bin/gdb -q --interpreter=mi",
+            "name": "shit",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/CommunicationFusion/a.out",
+            "preLaunchTask": "C/C++: gcc build active file",
+            "program": "${workspaceFolder}/CommunicationFusion/sendd",
             "args": [],
             "stopAtEntry": false,
-            "cwd": "${fileDirname}/CommunicationFusion/",
+            "cwd": "${fileDirname}",
             "environment": [],
             "externalConsole": false,
             "MIMode": "gdb",

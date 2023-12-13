@@ -3,6 +3,7 @@
         "test.h": "c",
         "stdio.h": "c",
         "errno.h": "c",
-        "mylib_serialport.h": "c"
+        "mylib_serialport.h": "c",
+        "mylib_slip.h": "c"
     }
 }

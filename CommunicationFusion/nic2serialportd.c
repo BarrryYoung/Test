@@ -9,8 +9,6 @@
 #include "mylib_slip.h"
 
 
-
-
 typedef struct {
     int serial_port;
     int tap_fd;

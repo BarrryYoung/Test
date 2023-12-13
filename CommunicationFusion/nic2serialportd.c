@@ -89,11 +89,20 @@ void* recvd(void* args){
 
 int main() {
     //初始化
-    char serialport[]="/dev/ttyS11";
+    char serialport[]="/dev/ttyS5";
     char tap[]="tap0";
+    printf("openingn serialport: %s",serialport);
     int serial_port=serial_port_init(serialport);//serial_port初始化，返回fd
+    if(serial_port<0){
+        perror("opening serial port error:");
+        exit(-1);
+    }
+    printf("opening nic: %s",tap);
     int tap_fd=tap_init(tap);//tap初始化,返回file descriptor
-    printf("he\n");
+    if(tap_fd<0){
+        printf("opening nic error:");
+        exit(-1);
+    }
 
     //多线程
     pthread_t thread_recv, thread_send;

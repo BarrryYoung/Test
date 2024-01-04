@@ -2,12 +2,18 @@ import socket
 import time
 
 
+testtime=5
+speed=5
+
+
+
 def recv():
     #接收端配置
-    server_ip = '127.0.0.1'   # 服务器IP地址
+    global testtime,speed
+    server_ip = "127.0.0.1"   # 服务器IP地址
     server_port = 12345       # 服务器端口号
     buffer_size = 1024        # 接收缓冲区大小
-    expected_size = 100 * 1024 # 预期接收的总数据大小（10KB）
+    expected_size = testtime * speed * 1024 # 预期接收的总数据大小（10KB）
 
     # 创建UDP套接字
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -21,13 +27,30 @@ def recv():
     total_bytes_received = 0
 
     i=0
-    while total_bytes_received < expected_size:
+    total_time=0
+    while total_bytes_received < expected_size :
+
+        if i>=1:
+            current_time=time.time()
+            total_time=current_time-start_time
+            if current_time-last_time>=1:
+                last_time=current_time
+                print(f"过去了{total_time}s,收到了{total_bytes_received}B数据")
+            if  total_time >=testtime:break
+
         message, address = server_socket.recvfrom(buffer_size)
+        total_bytes_received += len(message)
+
         i+=1
         if i==1 : 
             start_time = time.time()
+            last_time=start_time
             print("开始计时")
-        total_bytes_received += len(message)
+        
+        
+
+
+        
 
     # 记录接收结束的时间
     end_time = time.time()+1
@@ -43,14 +66,16 @@ def recv():
     # 关闭套接字
     server_socket.close()
 
+
 def send():
     # 发送端配置
-    server_ip = '127.0.0.1'    # 接收端IP地址
+    global tesettime,speed
+    server_ip = "127.0.0.1"    # 接收端IP地址
     server_port = 12345        # 接收端端口号
-    total_data_size = 10240    # 10KB的数据
+    total_data_size = 1024*speed    # 10KB的数据
     packet_size = 42           # 每个数据包的大小（小于典型的MTU）
     send_interval = 1          # 发送间隔（秒）
-    num_sends = 10             # 发送次数
+
 
     # 创建UDP套接字
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -69,7 +94,7 @@ def send():
         if current_time - start_time >= send_interval:
             count+=1
             print(f"第{count}次发送...")
-            if count>=11:break
+            if count>=testtime+1:break
             # 更新下一次发送的时间
             start_time = current_time
 

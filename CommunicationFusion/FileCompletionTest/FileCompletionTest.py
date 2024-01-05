@@ -2,6 +2,7 @@ import socket
 import os
 import json
 import hashlib
+import time
 
 
 
@@ -25,6 +26,19 @@ def generate_random_file(file_path, size_in_bytes):
     with open(file_path, 'wb') as file:
         random_data = os.urandom(size_in_bytes)
         file.write(random_data)
+
+
+
+
+def calculate_speed(recvddatalen,totaltime):
+    print(f"用时{totaltime:2f}s",end='')
+    speed_in_Bbs=recvddatalen/totaltime
+    if speed_in_Bbs <= 1000:
+        print(f"速度：{speed_in_Bbs:.2f}B/s")
+    elif 1000< speed_in_Bbs <= 1000000:
+        print(f"速度：{speed_in_Bbs/1000:.2f}KB/s")
+    elif 1000000< speed_in_Bbs <= 1000000000:
+        print(f"速度：{speed_in_Bbs/1000000:.2f}MB/s")
 
 
 
@@ -62,14 +76,22 @@ def receive_file(save_as_filename, listen_ip, listen_port):
             # 打开要保存的文件
             with open(save_as_filename, 'wb') as file:
                 print("开始接收，ctrl+c中断")
+                i=0
                 while True:
                     # 接收数据
                     data, addr = udp_socket.recvfrom(1024)
+                    i+=1
+                    if i==1:
+                        starttime=time.time()
+                        print("测速开始")
                     recvddatalen+=len(data)
                     print(f"已收到{recvddatalen}字节",end="\r")
                     # 数据为空表示传输结束
                     if not data:
                         print("\n收到结束标志，结束中")
+                        endtime=time.time()
+                        totaltime=endtime-starttime
+                        calculate_speed(recvddatalen,totaltime)
                         break
                     
                     # 写入数据到文件
@@ -78,7 +100,6 @@ def receive_file(save_as_filename, listen_ip, listen_port):
             print("接收完成")
             md5_hash = calculate_file_md5(save_as_filename)
             print(f"MD5 Hash of {save_as_filename}: {md5_hash}")
-
             recvddatalen=0
             print("准备下一次接收...\n\n\n")
         except KeyboardInterrupt:

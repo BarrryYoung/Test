@@ -8,6 +8,8 @@
 #include "mylib_serialport.h"
 #include "mylib_slip.h"
 
+pthread_mutex_t lock_serial,lock_tap;
+
 
 typedef struct {
     int serial_port;
@@ -28,8 +30,9 @@ void* sendd(void *args){
 
 while(1){
 
-
+    pthread_mutex_lock(&lock_tap);
     tapframe_length=get_tap_frame(tap_fd,tapframe);
+    pthread_mutex_unlock(&lock_tap);
 
 
     //组装串口帧，也就是加头加尾
@@ -44,7 +47,9 @@ while(1){
     }
     printf("\n");
 
+    pthread_mutex_lock(&lock_serial);
     write(serial_port, serialframe, encoded_data_length);
+    pthread_mutex_unlock(&lock_serial);
     printf("\n\n\n\n");
 }
 
@@ -65,7 +70,9 @@ void* recvd(void* args){
 
     //进入死循环，包括：1.从串口读数据 2.解包数据 3.写到网卡中
     while(1){
+    pthread_mutex_lock(&lock_serial);
     serial_frame_length=read_serial_frame(serial_port,serial_frame);
+    pthread_mutex_unlock(&lock_serial);
     int decoded_data_length=slip_decode(&serial_frame[1],serial_frame_length-2);
     memcpy(tap_frame,&serial_frame[5],decoded_data_length-6);
     
@@ -80,12 +87,17 @@ void* recvd(void* args){
     }
 
 
+    pthread_mutex_lock(&lock_tap);
     write_tap_frame(tap_fd, tap_frame,decoded_data_length-6);
+    pthread_mutex_unlock(&lock_tap);
     printf("\n\n\n\n\n");
 
     }
 
 }
+
+
+
 
 int main() {
     //初始化
@@ -111,6 +123,11 @@ int main() {
     args.serial_port = serial_port;
     args.tap_fd = tap_fd;
 
+    //mutex
+    pthread_mutex_init(&lock_serial,NULL);
+    pthread_mutex_init(&lock_tap,NULL);
+
+
     if (pthread_create(&thread_recv, NULL, recvd, (void *)&args)) {
         fprintf(stderr, "Error creating recv thread\n");
         return 1;
@@ -126,6 +143,11 @@ int main() {
     pthread_join(thread_recv, NULL);
     pthread_join(thread_send, NULL);
     
+
+    pthread_mutex_destroy(&lock_serial);
+    pthread_mutex_destroy(&lock_tap);
+
+
     return 0;
 
 }

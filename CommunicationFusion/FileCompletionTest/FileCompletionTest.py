@@ -57,27 +57,31 @@ def receive_file(save_as_filename, listen_ip, listen_port):
     print(f"Listening on {listen_ip}:{listen_port}")
 
     recvddatalen=0
-    # 打开要保存的文件
-    with open(save_as_filename, 'wb') as file:
-        while True:
-            # 接收数据
-            data, addr = udp_socket.recvfrom(1024)
-            recvddatalen+=len(data)
-            print(f"已收到{recvddatalen}字节",end="\r")
-            # 数据为空表示传输结束
-            if not data:
-                print("\n收到结束标志，结束中")
-                break
-            
-            # 写入数据到文件
-            file.write(data)
+    while(True):
+        try:
+            # 打开要保存的文件
+            with open(save_as_filename, 'wb') as file:
+                print("开始接收，ctrl+c中断")
+                while True:
+                    # 接收数据
+                    data, addr = udp_socket.recvfrom(1024)
+                    recvddatalen+=len(data)
+                    print(f"已收到{recvddatalen}字节",end="\r")
+                    # 数据为空表示传输结束
+                    if not data:
+                        print("\n收到结束标志，结束中")
+                        break
+                    
+                    # 写入数据到文件
+                    file.write(data)
 
-    print("接收完成")
-    md5_hash = calculate_file_md5(save_as_filename)
-    print(f"MD5 Hash of {save_as_filename}: {md5_hash}")
-
-    # 关闭套接字
-    udp_socket.close()
+            print("接收完成")
+            md5_hash = calculate_file_md5(save_as_filename)
+            print(f"MD5 Hash of {save_as_filename}: {md5_hash}")
+            print("准备下一次接收...\n\n\n")
+        except KeyboardInterrupt:
+            # 关闭套接字
+            udp_socket.close()
 
 
 

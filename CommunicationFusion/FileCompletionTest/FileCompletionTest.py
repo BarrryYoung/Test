@@ -78,6 +78,8 @@ def receive_file(save_as_filename, listen_ip, listen_port):
             print("接收完成")
             md5_hash = calculate_file_md5(save_as_filename)
             print(f"MD5 Hash of {save_as_filename}: {md5_hash}")
+
+            recvddatalen=0
             print("准备下一次接收...\n\n\n")
         except KeyboardInterrupt:
             # 关闭套接字
